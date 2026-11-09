@@ -84,7 +84,7 @@ public class MainActivity extends Activity {
         }
         return null;
     }
-    String host(String device){return prefs.getString(device+"_host",device.equals("tv")?"192.168.1.6":"192.168.1.2");}
+    String host(String device){return prefs.getString(device+"_host",device.equals("tv")?"192.168.1.10":"192.168.1.20");}
     static boolean lost(Exception e){return e instanceof ConnectException||e instanceof NoRouteToHostException||e instanceof SocketTimeoutException||e instanceof javax.net.ssl.SSLException;}
     /** Searches the Wi-Fi when the device stopped answering at lostHost; true when it now has another address. */
     boolean relocate(String device,boolean now,String lostHost){
@@ -134,7 +134,7 @@ public class MainActivity extends Activity {
                 busy.remove(device);generation++;updateButtons();
                 if(error instanceof DeviceControl.PairingNeeded){
                     String fp=((DeviceControl.PairingNeeded)error).fingerprint;
-                    String host=prefs.getString(device+"_host",device.equals("tv")?"192.168.1.6":"192.168.1.2");
+                    String host=prefs.getString(device+"_host",device.equals("tv")?"192.168.1.10":"192.168.1.20");
                     new AlertDialog.Builder(this).setTitle("Confiar neste dispositivo?")
                         .setMessage("Confirme que este é o endereço da sua "+(device.equals("tv")?"TV":"máquina")+": "+host+".\n\nIdentificação do certificado:\n"+fp+"\n\nO app vai reconhecer este certificado nas próximas conexões.")
                         .setNegativeButton("Voltar",null).setPositiveButton("Confiar e continuar",(d,w)->{prefs.edit().putString(device+"_pin",fp).apply();retry.run();}).show();pollNow();return;
@@ -145,7 +145,7 @@ public class MainActivity extends Activity {
             });
         });
     }
-    void settings(){LinearLayout box=vertical();box.setPadding(dp(22),dp(6),dp(22),0);LinkedHashMap<String,EditText> fields=new LinkedHashMap<>();String[][] rows={{"tv_host","IP da TV","192.168.1.6"},{"tv_mac","MAC Wi-Fi da TV","AA:BB:CC:DD:EE:01"},{"pc_host","IP do computador","192.168.1.2"},{"pc_mac","MAC do computador","AA:BB:CC:DD:EE:02"}};for(String[] row:rows){box.addView(text(row[1],14,MUTED));EditText e=new EditText(this);e.setText(prefs.getString(row[0],row[2]));e.setSingleLine(true);box.addView(e);fields.put(row[0],e);}ScrollView scroll=new ScrollView(this);scroll.addView(box);AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Dispositivos da casa").setView(scroll).setNegativeButton("Voltar",null).setNeutralButton("Reconectar",(d,w)->{prefs.edit().remove("tv_pin").remove("tv_key").remove("tv_repair").remove("pc_pin").remove("pc_token").remove("pc_anydesk_id").apply();build();}).setPositiveButton("Salvar",null).create();dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{try{for(String key:Arrays.asList("tv_host","pc_host"))DeviceControl.localHost(fields.get(key).getText().toString().trim());for(String key:Arrays.asList("tv_mac","pc_mac"))if(!fields.get(key).getText().toString().trim().matches("(?i)([0-9a-f]{2}[:-]){5}[0-9a-f]{2}"))throw new Exception("Confira os endereços MAC.");SharedPreferences.Editor edit=prefs.edit();for(String[] row:rows)edit.putString(row[0],fields.get(row[0]).getText().toString().trim());edit.apply();dialog.dismiss();build();}catch(Exception e){Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();}}));dialog.show();}
+    void settings(){LinearLayout box=vertical();box.setPadding(dp(22),dp(6),dp(22),0);LinkedHashMap<String,EditText> fields=new LinkedHashMap<>();String[][] rows={{"tv_host","IP da TV","192.168.1.10"},{"tv_mac","MAC Wi-Fi da TV","AA:BB:CC:DD:EE:01"},{"pc_host","IP do computador","192.168.1.20"},{"pc_mac","MAC do computador","AA:BB:CC:DD:EE:02"}};for(String[] row:rows){box.addView(text(row[1],14,MUTED));EditText e=new EditText(this);e.setText(prefs.getString(row[0],row[2]));e.setSingleLine(true);box.addView(e);fields.put(row[0],e);}ScrollView scroll=new ScrollView(this);scroll.addView(box);AlertDialog dialog=new AlertDialog.Builder(this).setTitle("Dispositivos da casa").setView(scroll).setNegativeButton("Voltar",null).setNeutralButton("Reconectar",(d,w)->{prefs.edit().remove("tv_pin").remove("tv_key").remove("tv_repair").remove("pc_pin").remove("pc_token").remove("pc_anydesk_id").apply();build();}).setPositiveButton("Salvar",null).create();dialog.setOnShowListener(d->dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v->{try{for(String key:Arrays.asList("tv_host","pc_host"))DeviceControl.localHost(fields.get(key).getText().toString().trim());for(String key:Arrays.asList("tv_mac","pc_mac"))if(!fields.get(key).getText().toString().trim().matches("(?i)([0-9a-f]{2}[:-]){5}[0-9a-f]{2}"))throw new Exception("Confira os endereços MAC.");SharedPreferences.Editor edit=prefs.edit();for(String[] row:rows)edit.putString(row[0],fields.get(row[0]).getText().toString().trim());edit.apply();dialog.dismiss();build();}catch(Exception e){Toast.makeText(this,e.getMessage(),Toast.LENGTH_LONG).show();}}));dialog.show();}
     @Override public void onDestroy(){handler.removeCallbacksAndMessages(null);worker.shutdownNow();statusWorker.shutdownNow();super.onDestroy();}
     static final class DeviceIcon extends View {
         final Paint paint=new Paint(3);final int kind;

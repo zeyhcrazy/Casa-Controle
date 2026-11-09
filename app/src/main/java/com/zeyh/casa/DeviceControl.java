@@ -43,7 +43,7 @@ final class DeviceControl {
      */
     static boolean locate(SharedPreferences prefs,String device,InetAddress phone,int prefix) throws Exception {
         int port=device.equals("tv")?3001:8765;String pin=prefs.getString(device+"_pin","");
-        String current=prefs.getString(device+"_host",device.equals("tv")?"192.168.1.6":"192.168.1.2");
+        String current=prefs.getString(device+"_host",device.equals("tv")?"192.168.1.10":"192.168.1.20");
         ExecutorService pool=Executors.newFixedThreadPool(64);
         try{
             List<Future<String>> probes=new ArrayList<>();
@@ -57,14 +57,14 @@ final class DeviceControl {
         }finally{pool.shutdownNow();}
     }
     static StateInfo pcState(SharedPreferences prefs){
-        if(!prefs.contains("pc_token")||!prefs.contains("pc_pin"))return reachable(prefs.getString("pc_host","192.168.1.2"),8765)?new StateInfo(CONNECT,"Na rede · conecte o app"):new StateInfo(UNREACHABLE,"Desligado ou sem conexão");
+        if(!prefs.contains("pc_token")||!prefs.contains("pc_pin"))return reachable(prefs.getString("pc_host","192.168.1.20"),8765)?new StateInfo(CONNECT,"Na rede · conecte o app"):new StateInfo(UNREACHABLE,"Desligado ou sem conexão");
         try{JSONObject r=pc(prefs,"/api/status",null,1800);boolean pending=r.optDouble("shutdown_at",0)>0;
             return new StateInfo(ON,pending?"Ligado · desligamento agendado":r.optBoolean("dry_run")?"Ligado · modo de teste":"Ligado",pending);
         }catch(SSLException e){return new StateInfo(ERROR,"Certificado alterado · reconecte");}
         catch(Exception e){String msg=e.getMessage();if(msg!=null&&msg.contains("pareamento"))return new StateInfo(CONNECT,"Na rede · reconecte o app");return new StateInfo(UNREACHABLE,"Desligado ou sem conexão");}
     }
     static StateInfo tvState(SharedPreferences prefs){
-        if(!prefs.contains("tv_key")||!prefs.contains("tv_pin")||prefs.getBoolean("tv_repair",false))return reachable(prefs.getString("tv_host","192.168.1.6"),3001)?new StateInfo(CONNECT,"Na rede · conecte o app"):new StateInfo(UNREACHABLE,"Desligada ou sem conexão");
+        if(!prefs.contains("tv_key")||!prefs.contains("tv_pin")||prefs.getBoolean("tv_repair",false))return reachable(prefs.getString("tv_host","192.168.1.10"),3001)?new StateInfo(CONNECT,"Na rede · conecte o app"):new StateInfo(UNREACHABLE,"Desligada ou sem conexão");
         try(Tv tv=new Tv(prefs,false)){
             String state=tv.powerState().replace(" ","").toLowerCase(Locale.ROOT);
             if(state.equals("active"))return new StateInfo(ON,"Ligada");
@@ -105,7 +105,7 @@ final class DeviceControl {
         return pc(prefs,route,body,5000);
     }
     static JSONObject pc(SharedPreferences prefs,String route,JSONObject body,int timeout) throws Exception {
-        String host=localHost(prefs.getString("pc_host","192.168.1.2"));
+        String host=localHost(prefs.getString("pc_host","192.168.1.20"));
         String pin=prefs.getString("pc_pin",""); if(pin.isEmpty()) throw new PairingNeeded(discoverCertificate(host,8765));
         HttpsURLConnection conn=(HttpsURLConnection)new URL("https://"+host+":8765"+route).openConnection();
         conn.setSSLSocketFactory(pinnedFactory(pin,false));
@@ -127,7 +127,7 @@ final class DeviceControl {
         final SSLSocket socket; final InputStream input; final OutputStream output;
         Tv(SharedPreferences prefs) throws Exception {this(prefs,true);}
         Tv(SharedPreferences prefs,boolean interactive) throws Exception {
-            String host=localHost(prefs.getString("tv_host","192.168.1.6"));
+            String host=localHost(prefs.getString("tv_host","192.168.1.10"));
             String pin=prefs.getString("tv_pin","");if(pin.isEmpty())throw new PairingNeeded(discoverCertificate(host,3001));
             String saved=prefs.getString("tv_key","");if(!interactive&&saved.isEmpty())throw new AuthorizationNeeded();
             Socket raw=new Socket();raw.connect(new InetSocketAddress(host,3001),interactive?4000:1800);
@@ -198,7 +198,7 @@ final class DeviceControl {
     static final class Pointer implements AutoCloseable{
         final SSLSocket socket;final OutputStream out;
         Pointer(SharedPreferences prefs,String socketPath)throws Exception{
-            URI uri=new URI(socketPath);String host=localHost(prefs.getString("tv_host","192.168.1.6"));
+            URI uri=new URI(socketPath);String host=localHost(prefs.getString("tv_host","192.168.1.10"));
             if(!uri.getScheme().equals("wss")||!host.equals(uri.getHost())||uri.getPort()!=3001||uri.getUserInfo()!=null||uri.getFragment()!=null)throw new IOException("A TV retornou um endereço de controle inesperado.");
             String path=uri.getRawPath();if(uri.getRawQuery()!=null)path+="?"+uri.getRawQuery();
             Socket raw=new Socket();raw.connect(new InetSocketAddress(host,3001),4000);

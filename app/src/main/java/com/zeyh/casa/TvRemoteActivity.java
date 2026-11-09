@@ -50,7 +50,7 @@ public class TvRemoteActivity extends Activity {
         if(!active||request!=generation)return;
         state.setText("Não conectou: "+(e.getMessage()==null?"confira a TV e o Wi-Fi":e.getMessage()));
         if(e instanceof DeviceControl.PairingNeeded){String fp=((DeviceControl.PairingNeeded)e).fingerprint;
-            new AlertDialog.Builder(this).setTitle("Confirmar TV").setMessage("IP: "+prefs.getString("tv_host","192.168.1.6")+"\nCertificado: "+fp).setNegativeButton("Voltar",null).setPositiveButton("Confiar",(d,w)->{prefs.edit().putString("tv_pin",fp).apply();connect();}).show();
+            new AlertDialog.Builder(this).setTitle("Confirmar TV").setMessage("IP: "+prefs.getString("tv_host","192.168.1.10")+"\nCertificado: "+fp).setNegativeButton("Voltar",null).setPositiveButton("Confiar",(d,w)->{prefs.edit().putString("tv_pin",fp).apply();connect();}).show();
         }else if(String.valueOf(e.getMessage()).matches("(?is).*(401|403|permission|unauthor|denied).*")){
             new AlertDialog.Builder(this).setTitle("Autorizar o controle da TV").setMessage("Esta função precisa de acesso às teclas. Ao continuar, escolha Permitir no pedido exibido pela TV.")
                 .setNegativeButton("Voltar",null).setPositiveButton("Autorizar",(d,w)->{prefs.edit().remove("tv_key").apply();connect();}).show();
