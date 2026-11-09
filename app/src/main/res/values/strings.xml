@@ -1,0 +1,9 @@
+<resources>
+    <string name="tv_connecting">Conectando à TV. Se aparecer um pedido na tela dela, escolha Permitir.</string>
+    <string name="pair_code_invalid">Digite os 6 números do código.</string>
+    <string name="connection_error">Não foi possível conectar. Confira se está no Wi-Fi de casa e se o aparelho está ligado.\n%1$s</string>
+    <string name="pc_check">Verificar computador</string>
+    <string name="pc_connect">Conectar computador</string>
+    <string name="waking">● Ligando… aguardando resposta</string>
+    <string name="device_state">● %1$s</string>
+</resources>
